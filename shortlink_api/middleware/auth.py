@@ -1,7 +1,7 @@
 from fastapi import Request, HTTPException, status
 from fastapi.security import APIKeyHeader
 
-from ..core.config import settings
+from ..models.database import verify_api_key_hash
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
@@ -15,7 +15,9 @@ async def verify_admin_api_key(request: Request) -> bool:
             detail="缺少 API Key"
         )
     
-    if api_key not in settings.ADMIN_API_KEYS:
+    is_valid = await verify_api_key_hash(api_key)
+    
+    if not is_valid:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="无效的 API Key"

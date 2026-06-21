@@ -42,11 +42,8 @@ def is_link_expired(link: dict) -> bool:
         return False
 
 
-async def handle_redirect(
+async def handle_redirect_without_stats(
     short_code: str,
-    ip: str,
-    user_agent: str,
-    referer: str,
     permanent: bool = False
 ) -> Tuple[int, Optional[str], Optional[str]]:
     link = await get_link_by_code(short_code)
@@ -59,9 +56,36 @@ async def handle_redirect(
     
     status_code = 301 if permanent else 302
     
-    await collect_stats(short_code, ip, user_agent, referer)
-    
     return status_code, link["original_url"], link.get("password_hash")
+
+
+async def handle_redirect(
+    short_code: str,
+    ip: str,
+    user_agent: str,
+    referer: str,
+    permanent: bool = False
+) -> Tuple[int, Optional[str], Optional[str]]:
+    status_code, original_url, password_hash = await handle_redirect_without_stats(
+        short_code, permanent
+    )
+    
+    if status_code != 200 and status_code != 301 and status_code != 302:
+        return status_code, original_url, password_hash
+    
+    if not password_hash:
+        await collect_stats(short_code, ip, user_agent, referer)
+    
+    return status_code, original_url, password_hash
+
+
+async def record_visit_after_password_verified(
+    short_code: str,
+    ip: str,
+    user_agent: str,
+    referer: str,
+) -> None:
+    await collect_stats(short_code, ip, user_agent, referer)
 
 
 async def verify_link_password(short_code: str, password: str) -> bool:

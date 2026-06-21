@@ -43,6 +43,7 @@ class StatsResponse(BaseModel):
     by_country: Dict[str, int]
     by_device: Dict[str, int]
     timeline: List[Dict[str, object]]
+    geoip_available: bool = False
 
 
 class BatchStatsResponse(BaseModel):

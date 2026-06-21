@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, Query
 from ..models.schemas import StatsResponse, BatchStatsResponse
 from ..models.database import get_db
 from ..services.redirector import get_link_by_code
+from ..core.geoip import is_geoip_available
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
@@ -73,6 +74,7 @@ async def _get_stats_for_code(
         by_country=dict(by_country),
         by_device=dict(by_device),
         timeline=sorted_timeline,
+        geoip_available=is_geoip_available(),
     )
 
 
@@ -90,6 +92,7 @@ async def get_batch_stats(
     if len(short_codes) > 100:
         raise HTTPException(status_code=400, detail="最多查询 100 个短码")
     
+    geoip_status = is_geoip_available()
     results = {}
     
     for code in short_codes:
@@ -104,6 +107,7 @@ async def get_batch_stats(
                     by_country={},
                     by_device={},
                     timeline=[],
+                    geoip_available=geoip_status,
                 )
             else:
                 raise

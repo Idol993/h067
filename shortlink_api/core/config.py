@@ -1,4 +1,5 @@
 import os
+import secrets
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,8 +27,6 @@ class Settings:
         "scam.example.com",
     ]
     
-    ADMIN_API_KEYS: list = os.getenv("ADMIN_API_KEYS", "admin-key-123").split(",")
-    
     SNOWFLAKE_DATACENTER_ID: int = 1
     SNOWFLAKE_WORKER_ID: int = 1
     
@@ -35,5 +34,8 @@ class Settings:
     
     PASSWORD_COOKIE_NAME: str = "shortlink_auth"
     PASSWORD_COOKIE_TTL: int = 86400
+    COOKIE_SECRET_KEY: str = os.getenv("COOKIE_SECRET_KEY", secrets.token_hex(32))
+    
+    DEFAULT_ADMIN_API_KEY: str = os.getenv("DEFAULT_ADMIN_API_KEY", "admin-default-key-2024")
 
 settings = Settings()
